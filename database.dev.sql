@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS "golf_courses" (
 	"state" text NOT NULL,
 	"zip_code" bigint NOT NULL,
 	"latitude" decimal(9,6) NOT NULL, -- Defined precision and scale for latitude
-	"longitude" decimal(9,6) NOT NULL, -- Defined precision and scale for longitude
+	"longitude" decimal(9,6) NOT NULL, -- Defined precision and scale for longitude 
+    "image_url" varchar,
 	PRIMARY KEY ("id")
 );
 
