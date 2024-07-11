@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "user" (
 	"address" text NOT NULL,
 	"birthdate" date,
 	"created_at" timestamp with time zone NOT NULL DEFAULT current_timestamp,
-	"admin" boolean NOT NULL,
+	"admin" boolean NOT NULL DEFAULT false,
 	PRIMARY KEY ("id")
 );
 
