@@ -15,7 +15,7 @@ function LoginForm() {
       dispatch({
         type: 'LOGIN',
         payload: {
-          username: username,
+          email: username,
           password: password,
         },
       });

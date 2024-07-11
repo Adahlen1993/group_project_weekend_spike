@@ -1,81 +1,84 @@
+-- Ensure proper naming conventions, data types, and indexing
+-- Enable the uuid-ossp extension for generating UUIDs
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS "user" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-	"email" text NOT NULL UNIQUE,
-	"password" text NOT NULL,
-	"name" text NOT NULL,
-	"phone_number" bigint NOT NULL,
-	"address" text NOT NULL,
-	"birthdate" date,
-	"created_at" timestamp with time zone NOT NULL DEFAULT current_timestamp,
-	"admin" boolean NOT NULL,
-	PRIMARY KEY ("id")
+	"id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+	"email" TEXT NOT NULL UNIQUE,
+	"password" TEXT NOT NULL, -- Ensure this is hashed and salted
+	"name" TEXT NOT NULL,
+	"phone_number" VARCHAR(20) NOT NULL,
+	"address" TEXT NOT NULL,
+	"birthdate" DATE,
+	"created_at" TIMESTAMP NOT NULL DEFAULT current_timestamp,
+	"admin" BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS "discounts" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-	"name" text NOT NULL,
-	PRIMARY KEY ("id")
+	"id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+	"name" TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "restrictions" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-	"name" text NOT NULL,
-	PRIMARY KEY ("id")
+	"id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+	"name" TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "golf_courses" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-	"name" text NOT NULL,
-	"phone_number" bigint,
-	"isActive" boolean NOT NULL DEFAULT true,
-	"created_at" timestamp with time zone NOT NULL DEFAULT current_timestamp,
-	"street" text NOT NULL,
-	"city" text NOT NULL,
-	"state" text NOT NULL,
-	"zip_code" bigint NOT NULL,
-	"longitude" text NOT NULL,
-	"latitude" text NOT NULL,
-	PRIMARY KEY ("id")
+	"id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+	"name" TEXT NOT NULL,
+	"phone_number" VARCHAR(20),
+	"is_active" BOOLEAN NOT NULL DEFAULT true, -- Consistent naming with snake_case
+	"created_at" TIMESTAMP NOT NULL DEFAULT current_timestamp,
+	"street" TEXT NOT NULL,
+	"city" TEXT NOT NULL,
+	"state" TEXT NOT NULL,
+	"zip_code" VARCHAR(10) NOT NULL, -- ZIP codes can have leading zeros and extended format
+	"latitude" DECIMAL(9,6) NOT NULL,
+	"longitude" DECIMAL(9,6) NOT NULL,
+    "image_url" TEXT -- Use TEXT for URLs for consistency
 );
 
 CREATE TABLE IF NOT EXISTS "golf_courses_discounts" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-	"golf_courses_id" uuid NOT NULL,
-	"discounts_id" uuid NOT NULL,
-	PRIMARY KEY ("id"),
-	FOREIGN KEY ("golf_courses_id") REFERENCES "golf_courses"("id"),
-	FOREIGN KEY ("discounts_id") REFERENCES "discounts"("id")
+	"id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+	"golf_course_id" UUID NOT NULL,
+	"discount_id" UUID NOT NULL,
+	FOREIGN KEY ("golf_course_id") REFERENCES "golf_courses"("id") ON DELETE CASCADE,
+	FOREIGN KEY ("discount_id") REFERENCES "discounts"("id") ON DELETE CASCADE,
+	UNIQUE ("golf_course_id", "discount_id") -- Ensure unique pairings
 );
 
 CREATE TABLE IF NOT EXISTS "golf_courses_restrictions" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-	"golf_courses_id" uuid NOT NULL,
-	"restrictions_id" uuid NOT NULL,
-	PRIMARY KEY ("id"),
-	FOREIGN KEY ("golf_courses_id") REFERENCES "golf_courses"("id"),
-	FOREIGN KEY ("restrictions_id") REFERENCES "restrictions"("id")
+	"id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+	"golf_course_id" UUID NOT NULL,
+	"restriction_id" UUID NOT NULL,
+	FOREIGN KEY ("golf_course_id") REFERENCES "golf_courses"("id") ON DELETE CASCADE,
+	FOREIGN KEY ("restriction_id") REFERENCES "restrictions"("id") ON DELETE CASCADE,
+	UNIQUE ("golf_course_id", "restriction_id") -- Ensure unique pairings
 );
 
 CREATE TABLE IF NOT EXISTS "punch_card" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-	"users_id" uuid NOT NULL,
-	"isPurchased" boolean NOT NULL DEFAULT false,
-	"purchased_date" timestamp with time zone DEFAULT NULL,
-	PRIMARY KEY ("id"),
-	FOREIGN KEY ("users_id") REFERENCES "user"("id")
+	"id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+	"user_id" UUID NOT NULL,
+	"is_purchased" BOOLEAN NOT NULL DEFAULT false,
+	"purchased_date" TIMESTAMP DEFAULT NULL,
+	FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "punch_card_golf_courses" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-	"punch_card_id" uuid NOT NULL,
-	"golf_courses_id" uuid NOT NULL,
-	"isRedeemed" boolean DEFAULT false,
-	"redeemed_date" timestamp with time zone,
-	"discount_id" uuid NOT NULL,
-	PRIMARY KEY ("id"),
-	FOREIGN KEY ("punch_card_id") REFERENCES "punch_card"("id"),
-	FOREIGN KEY ("golf_courses_id") REFERENCES "golf_courses"("id"),
-	FOREIGN KEY ("discount_id") REFERENCES "discounts"("id")
+	"id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+	"punch_card_id" UUID NOT NULL,
+	"golf_course_id" UUID NOT NULL,
+	"is_redeemed" BOOLEAN DEFAULT false,
+	"redeemed_date" TIMESTAMP,
+	"discount_id" UUID NOT NULL,
+	FOREIGN KEY ("punch_card_id") REFERENCES "punch_card"("id") ON DELETE CASCADE,
+	FOREIGN KEY ("golf_course_id") REFERENCES "golf_courses"("id") ON DELETE CASCADE,
+	FOREIGN KEY ("discount_id") REFERENCES "discounts"("id") ON DELETE CASCADE,
+	UNIQUE ("punch_card_id", "golf_course_id") -- Ensure unique pairings
 );
+
+-- Indexes for frequently queried fields
+CREATE INDEX IF NOT EXISTS idx_user_email ON "user" ("email");
+CREATE INDEX IF NOT EXISTS idx_golf_courses_name ON "golf_courses" ("name");
+CREATE INDEX IF NOT EXISTS idx_punch_card_user_id ON "punch_card" ("user_id");

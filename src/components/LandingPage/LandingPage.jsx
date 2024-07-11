@@ -13,14 +13,7 @@ function LandingPage() {
     history.push('/login');
   };
 
-  navigator.geolocation.getCurrentPosition((position) => {
-    const userLatitude = position.coords.latitude;
-    const userLongitude = position.coords.longitude;
-    // Call a function to process this location
-    // sortLocationsByDistance(userLatitude, userLongitude);
-    console.log('latitude', userLatitude);
-    console.log('longitude', userLongitude);
-});
+
 
 
   return (

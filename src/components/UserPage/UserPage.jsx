@@ -3,6 +3,14 @@ import LogOutButton from '../LogOutButton/LogOutButton';
 import {useSelector} from 'react-redux';
 
 function UserPage() {
+  navigator.geolocation.getCurrentPosition((position) => {
+    const userLatitude = position.coords.latitude;
+    const userLongitude = position.coords.longitude;
+    // Call a function to process this location
+    // sortLocationsByDistance(userLatitude, userLongitude);
+    console.log('latitude', userLatitude);
+    console.log('longitude', userLongitude);
+});
   // this component doesn't do much to start, just renders some user reducer info to the DOM
   const user = useSelector((store) => store.user);
   return (
